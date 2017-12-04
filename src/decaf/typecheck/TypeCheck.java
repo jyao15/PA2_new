@@ -14,6 +14,7 @@ import decaf.error.BadLengthArgError;
 import decaf.error.BadLengthError;
 import decaf.error.BadNewArrayLength;
 import decaf.error.BadPrintArgError;
+import decaf.error.BadPrintCompArgError;
 import decaf.error.BadReturnTypeError;
 import decaf.error.BadTestExpr;
 import decaf.error.BreakOutOfLoopError;
@@ -554,6 +555,19 @@ public class TypeCheck extends Tree.Visitor {
 			}
 		}
 	}
+	
+	@Override
+	public void visitPrintComp(Tree.PrintComp printCompStmt) {
+		int i = 0;
+		for (Tree.Expr e : printCompStmt.exprs) {
+			e.accept(this);
+			i++;
+			if (!e.type.equal(BaseType.ERROR) && !e.type.equal(BaseType.COMPLEX)) {
+				issueError(new BadPrintCompArgError(e.getLocation(), Integer
+						.toString(i), e.type.toString()));
+			}
+		}
+	}
 
 	@Override
 	public void visitReturn(Tree.Return returnStmt) {
@@ -665,9 +679,15 @@ public class TypeCheck extends Tree.Visitor {
 				returnType = BaseType.INT;
 			}
 			else {
-				compatible = (left.type.equals(BaseType.INT) || left.type.equals(BaseType.COMPLEX))
-						&& (right.type.equals(BaseType.INT) || right.type.equals(BaseType.COMPLEX));
-				returnType = left.type;
+				if ((left.type.equals(BaseType.INT) || left.type.equals(BaseType.COMPLEX))
+						&& (right.type.equals(BaseType.INT) || right.type.equals(BaseType.COMPLEX))) {
+					compatible = true;
+					returnType = BaseType.COMPLEX;
+				}
+				else {
+					compatible = false;
+					returnType = left.type;
+				}	
 			}
 			break;
 		case Tree.MINUS:
@@ -708,6 +728,7 @@ public class TypeCheck extends Tree.Visitor {
 		if (!compatible) {
 			issueError(new IncompatBinOpError(location, left.type.toString(),
 					Parser.opStr(op), right.type.toString()));
+			returnType = BaseType.ERROR;
 		}
 		return returnType;
 	}
