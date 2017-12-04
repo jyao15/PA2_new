@@ -137,7 +137,9 @@ public class TypeCheck extends Tree.Visitor {
 				}
 			}
 			break;
-		
+		default:
+			System.out.println("Error! Unrecognized unary op!");
+			break;
 		}
 	}
 
@@ -657,8 +659,18 @@ public class TypeCheck extends Tree.Visitor {
 		Type returnType = BaseType.ERROR;
 		switch (op) {
 		case Tree.PLUS:
-		case Tree.MINUS:
 		case Tree.MUL:
+			if (left.type.equals(BaseType.INT) && left.type.equal(right.type)) {
+				compatible = true;
+				returnType = BaseType.INT;
+			}
+			else {
+				compatible = (left.type.equals(BaseType.INT) || left.type.equals(BaseType.COMPLEX))
+						&& (right.type.equals(BaseType.INT) || right.type.equals(BaseType.COMPLEX));
+				returnType = left.type;
+			}
+			break;
+		case Tree.MINUS:
 		case Tree.DIV:
 			compatible = left.type.equals(BaseType.INT)
 					&& left.type.equal(right.type);

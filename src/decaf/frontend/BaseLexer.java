@@ -63,7 +63,7 @@ public abstract class BaseLexer {
 	protected int imgConst(String ival) {
 		try {
 			setSemantic(getLocation(), SemValue.createLiteral(
-					Tree.COMPIMG, Integer.decode(ival.substring(0,ival.length()-1))));
+					Tree.COMPLEX, Integer.decode(ival.substring(0,ival.length()-1))));
 		} catch (NumberFormatException e) {
 			Driver.getDriver().issueError(
 					new IntTooLargeError(getLocation(), ival.substring(0,ival.length()-1)));
