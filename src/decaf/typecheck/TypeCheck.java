@@ -68,7 +68,9 @@ public class TypeCheck extends Tree.Visitor {
 	@Override
 	public void visitUnary(Tree.Unary expr) {
 		expr.expr.accept(this);
-		if(expr.tag == Tree.NEG){
+		switch(expr.tag) {
+		
+		case Tree.NEG:
 			if (expr.expr.type.equal(BaseType.ERROR)
 					|| expr.expr.type.equal(BaseType.INT)) {
 				expr.type = expr.expr.type;
@@ -77,14 +79,65 @@ public class TypeCheck extends Tree.Visitor {
 						expr.expr.type.toString()));
 				expr.type = BaseType.ERROR;
 			}
-		}
-		else{
+			break;
+			
+		case Tree.NOT:
 			if (!(expr.expr.type.equal(BaseType.BOOL) || expr.expr.type
 					.equal(BaseType.ERROR))) {
 				issueError(new IncompatUnOpError(expr.getLocation(), "!",
 						expr.expr.type.toString()));
 			}
 			expr.type = BaseType.BOOL;
+			break;
+			
+		case Tree.RE:
+			if (expr.expr.type.equal(BaseType.COMPLEX)) {
+				expr.type = BaseType.INT;
+			}
+			else {
+				if (expr.expr.type.equal(BaseType.ERROR)) {
+					expr.type = BaseType.ERROR;
+				}
+				else {
+					issueError(new IncompatUnOpError(expr.getLocation(), "@",
+							expr.expr.type.toString()));
+					expr.type = BaseType.ERROR;
+				}
+			}
+			break;
+			
+		case Tree.IM:
+			if (expr.expr.type.equal(BaseType.COMPLEX)) {
+				expr.type = BaseType.INT;
+			}
+			else {
+				if (expr.expr.type.equal(BaseType.ERROR)) {
+					expr.type = BaseType.ERROR;
+				}
+				else {
+					issueError(new IncompatUnOpError(expr.getLocation(), "$",
+							expr.expr.type.toString()));
+					expr.type = BaseType.ERROR;
+				}
+			}
+			break;
+			
+		case Tree.TOCOMP:
+			if (expr.expr.type.equal(BaseType.INT)) {
+				expr.type = BaseType.COMPLEX;
+			}
+			else {
+				if (expr.expr.type.equal(BaseType.ERROR)) {
+					expr.type = BaseType.ERROR;
+				}
+				else {
+					issueError(new IncompatUnOpError(expr.getLocation(), "#",
+							expr.expr.type.toString()));
+					expr.type = BaseType.ERROR;
+				}
+			}
+			break;
+		
 		}
 	}
 
@@ -96,6 +149,9 @@ public class TypeCheck extends Tree.Visitor {
 			break;
 		case Tree.BOOL:
 			literal.type = BaseType.BOOL;
+			break;
+		case Tree.COMPLEX:
+			literal.type = BaseType.COMPLEX;
 			break;
 		case Tree.STRING:
 			literal.type = BaseType.STRING;
@@ -538,6 +594,9 @@ public class TypeCheck extends Tree.Visitor {
 			break;
 		case Tree.INT:
 			type.type = BaseType.INT;
+			break;
+		case Tree.COMPLEX:
+			type.type = BaseType.COMPLEX;
 			break;
 		case Tree.BOOL:
 			type.type = BaseType.BOOL;
